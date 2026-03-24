@@ -3,39 +3,44 @@
 // In production, dotenv is NOT loaded — env vars come from Render dashboard.
 
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+  require('dotenv').config();
 }
 
 const config = {
-    PORT: process.env.PORT || 5001,
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    BASE_URL: process.env.BASE_URL || 'http://localhost:5001',
-    CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
-    MONGO_URI: process.env.MONGO_URI,
+  PORT: process.env.PORT || 5001,
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  BASE_URL: process.env.BASE_URL || 'http://localhost:5001',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:3000',
 
-    // CORS — comma-separated string parsed into array
-    ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-        : [],
+  // Database
+  MONGO_URI: process.env.MONGO_URI,
 
-    // JWT
-    JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
-    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-    ACCESS_TOKEN_EXPIRES: process.env.ACCESS_TOKEN_EXPIRES || '15m',
-    REFRESH_TOKEN_EXPIRES: process.env.REFRESH_TOKEN_EXPIRES || '7d',
+  // CORS — comma-separated string parsed into array
+  ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : [],
 
-    // Email (Nodemailer)
-    SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
-    SMTP_PORT: parseInt(process.env.SMTP_PORT, 10) || 587,
-    SMTP_USER: process.env.SMTP_USER,
-    SMTP_PASS: process.env.SMTP_PASS,
-    EMAIL_FROM: process.env.EMAIL_FROM,
+  // JWT
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
+  ACCESS_TOKEN_EXPIRES: process.env.ACCESS_TOKEN_EXPIRES || '15m',
+  REFRESH_TOKEN_EXPIRES: process.env.REFRESH_TOKEN_EXPIRES || '7d',
 
-    // Google OAuth
-    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  // Email — Brevo HTTP API
+  BREVO_API_KEY: process.env.BREVO_API_KEY,
+  BREVO_SENDER_EMAIL: process.env.BREVO_SENDER_EMAIL || 'aditya.singh.in01@gmail.com',
+  BREVO_SENDER_NAME: process.env.BREVO_SENDER_NAME || 'Test Website',
+  OWNER_EMAIL: process.env.OWNER_EMAIL || 'aditya.singh.in01@gmail.com',
 
-    // reCAPTCHA
-    RECAPTCHA_SECRET: process.env.RECAPTCHA_SECRET,
+  // Google OAuth
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+
+  // reCAPTCHA
+  RECAPTCHA_SECRET: process.env.RECAPTCHA_SECRET,
+
+  // Upstash Redis
+  UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+  UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
 };
 
 module.exports = config;
