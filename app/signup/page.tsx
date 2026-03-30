@@ -115,19 +115,12 @@ export default function SignupPage() {
             <h2 style={{ fontSize: '28px', fontWeight: 800, color: '#f1f5f9', marginBottom: '8px' }}>
               Account Created!
             </h2>
-            <p style={{ color: '#475569', marginBottom: '24px', lineHeight: 1.6 }}>
+            <p style={{ color: '#475569', marginBottom: '8px', lineHeight: 1.6 }}>
               We sent a verification email to <strong style={{ color: '#f1f5f9' }}>{formData.email}</strong>.
-              Please verify your email before logging in.
             </p>
-            <Link href="/login" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              padding: '14px 32px', borderRadius: '14px',
-              background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
-              color: '#ffffff', fontWeight: 700, fontSize: '15px',
-              textDecoration: 'none',
-            }}>
-              Go to Login
-            </Link>
+            <p style={{ color: '#475569', lineHeight: 1.6 }}>
+              Click the link in the email to verify your account and you&apos;ll be taken straight to your dashboard. No login needed.
+            </p>
           </motion.div>
         </section>
       </main>
