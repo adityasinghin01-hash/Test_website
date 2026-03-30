@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Sparkles } from 'lucide-react'
+import { Menu, X, Sparkles, LogIn, LogOut, UserCircle } from 'lucide-react'
+import { isLoggedIn, clearAuth, getAccessToken, getRefreshToken } from '@/lib/auth'
+import { logoutUser } from '@/lib/api'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -25,6 +27,21 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn())
+  }, [])
+
+  const handleLogout = async () => {
+    const token = getRefreshToken()
+    if (token) {
+      try { await logoutUser(token) } catch {}
+    }
+    clearAuth()
+    setLoggedIn(false)
+    window.location.href = '/'
+  }
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -96,6 +113,47 @@ export default function Navbar() {
             ))}
           </div>
 
+          {/* Auth Button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }} className="hidden md:flex">
+            {loggedIn ? (
+              <>
+                <Link href="/profile" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '8px 18px', borderRadius: '999px',
+                  background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.3)',
+                  color: '#a78bfa', fontSize: '13px', fontWeight: 600,
+                  textDecoration: 'none',
+                }}>
+                  <UserCircle size={13} /> Profile
+                </Link>
+                <motion.button
+                  onClick={handleLogout}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '8px 18px', borderRadius: '999px',
+                    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                    color: '#f87171', fontSize: '13px', fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  <LogOut size={13} /> Sign Out
+                </motion.button>
+              </>
+            ) : (
+              <Link href="/login" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '8px 18px', borderRadius: '999px',
+                background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
+                color: '#ffffff', fontSize: '13px', fontWeight: 600,
+                textDecoration: 'none',
+              }}>
+                <LogIn size={13} /> Sign In
+              </Link>
+            )}
+          </div>
+
           {/* Mobile Button */}
           <button
             className="flex md:hidden"
@@ -132,6 +190,21 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {loggedIn && (
+                <Link
+                  href="/profile"
+                  onClick={() => setIsOpen(false)}
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                    color: pathname === '/profile' ? '#a78bfa' : '#475569',
+                    transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
+                  Profile
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
