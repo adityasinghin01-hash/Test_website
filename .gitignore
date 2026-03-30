@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# stray backend files (not part of frontend)
+/controllers
+/models
+/routes
+/web
+package 2.json
