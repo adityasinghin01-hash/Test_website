@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [dashboardData, setDashboardData] = useState<Record<string, unknown> | null>(null)
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const user = getUser()
+  const [user, setUser] = useState(getUser())
 
   useEffect(() => {
     const token = getAccessToken()
@@ -33,6 +33,7 @@ export default function DashboardPage() {
       router.push('/login')
       return
     }
+    setUser(getUser())
     const fetchDashboard = async () => {
       try {
         const data = await getUserDashboard()
