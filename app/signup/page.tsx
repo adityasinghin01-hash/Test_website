@@ -1,11 +1,15 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Mail, Lock, UserPlus, AlertCircle, CheckCircle, Sparkles, Eye, EyeOff } from 'lucide-react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import Navbar from '@/components/Navbar'
-import { signupUser } from '@/lib/api'
+import { signupUser, loginUser } from '@/lib/api'
+import { saveTokens, saveUser } from '@/lib/auth'
+
+const BASE_URL = 'https://backend-z6cy.onrender.com'
 
 const glass: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)',
@@ -33,12 +37,65 @@ const gradientText: React.CSSProperties = {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [dots, setDots] = useState('.')
   const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (status !== 'success') return
+
+    // Animate dots
+    const dotsInterval = setInterval(() => {
+      setDots(d => d.length >= 3 ? '.' : d + '.')
+    }, 500)
+
+    // Poll for verification every 3 seconds
+    console.log('[Spinx] Starting verification polling for:', formData.email)
+    pollingRef.current = setInterval(async () => {
+      try {
+        console.log('[Spinx] Polling check-verification-status...')
+        const res = await fetch(`${BASE_URL}/api/check-verification-status?email=${encodeURIComponent(formData.email)}`, {
+          mode: 'cors',
+        })
+        const data = await res.json()
+        console.log('[Spinx] Poll response:', data)
+        if (data.isVerified) {
+          clearInterval(pollingRef.current!)
+          clearInterval(dotsInterval)
+          console.log('[Spinx] Verified! Auto-logging in...')
+          // Auto-login with the credentials the user just entered
+          try {
+            const loginData = await loginUser({ email: formData.email, password: formData.password }) as {
+              accessToken: string
+              refreshToken: string
+              user: { id: string; email: string; isVerified: boolean }
+            }
+            saveTokens(loginData.accessToken, loginData.refreshToken)
+            saveUser(loginData.user)
+            console.log('[Spinx] Login successful, redirecting to dashboard...')
+            router.push('/dashboard')
+          } catch (loginErr) {
+            console.error('[Spinx] Auto-login failed:', loginErr)
+            // If auto-login fails for any reason, fall back to login page
+            router.push(`/login?verified=true&email=${encodeURIComponent(formData.email)}`)
+          }
+        }
+      } catch (pollErr) {
+        console.error('[Spinx] Polling error:', pollErr)
+      }
+    }, 3000)
+
+    return () => {
+      clearInterval(pollingRef.current!)
+      clearInterval(dotsInterval)
+    }
+  }, [status, formData.email, router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -53,7 +110,6 @@ export default function SignupPage() {
       setErrorMessage('Please enter your full name.')
       return
     }
-
     if (!formData.email.includes('@')) {
       setStatus('error')
       setErrorMessage('Please enter a valid email address.')
@@ -118,9 +174,19 @@ export default function SignupPage() {
             <p style={{ color: '#475569', marginBottom: '8px', lineHeight: 1.6 }}>
               We sent a verification email to <strong style={{ color: '#f1f5f9' }}>{formData.email}</strong>.
             </p>
-            <p style={{ color: '#475569', lineHeight: 1.6 }}>
-              Click the link in the email to verify your account and you&apos;ll be taken straight to your dashboard. No login needed.
+            <p style={{ color: '#475569', marginBottom: '28px', lineHeight: 1.6 }}>
+              Click the link in the email — this page will automatically take you to your dashboard once verified.
             </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                style={{ width: '18px', height: '18px', border: '2px solid rgba(6,182,212,0.3)', borderTopColor: '#06b6d4', borderRadius: '50%' }}
+              />
+              <span style={{ fontSize: '14px', color: '#475569' }}>
+                Waiting for verification{dots}
+              </span>
+            </div>
           </motion.div>
         </section>
       </main>

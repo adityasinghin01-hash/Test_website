@@ -1,7 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Mail, Lock, LogIn, AlertCircle, Sparkles, Eye, EyeOff } from 'lucide-react'
 import Navbar from '@/components/Navbar'
@@ -46,9 +46,12 @@ const gradientText: React.CSSProperties = {
   backgroundClip: 'text',
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const searchParams = useSearchParams()
+  const isVerified = searchParams.get('verified') === 'true'
+  const prefillEmail = searchParams.get('email') || ''
+  const [formData, setFormData] = useState({ email: prefillEmail, password: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -167,6 +170,16 @@ export default function LoginPage() {
               display: 'flex', flexDirection: 'column', gap: '20px',
             }}
           >
+            {isVerified && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '14px', borderRadius: '12px',
+                background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)',
+                color: '#4ade80', fontSize: '14px',
+              }}>
+                ✓ Email verified! Sign in to continue.
+              </div>
+            )}
             {status === 'error' && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
@@ -263,5 +276,13 @@ export default function LoginPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main style={{ minHeight: '100vh', backgroundColor: '#0a0a0f' }} />}>
+      <LoginForm />
+    </Suspense>
   )
 }
